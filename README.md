@@ -1,5 +1,7 @@
 # SmartERP — Billing, Inventory & Accounting 
 
+![SmartERP demo](docs/demo.gif)
+
 A keyboard-first web ERP. MVP scope as per the project brief:
 
 - **Ledgers** — customer, supplier, stock item (with units)
