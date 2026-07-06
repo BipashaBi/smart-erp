@@ -1,15 +1,17 @@
-# SmartERP — Billing, Inventory & Accounting (Tally-inspired)
+# SmartERP — Billing, Inventory & Accounting 
+
+![SmartERP demo](docs/demo.gif)
 
 A keyboard-first web ERP. MVP scope as per the project brief:
 
 - **Ledgers** — customer, supplier, stock item (with units)
-- **Vouchers** — sales (customer bill) and purchase (stock entry)
+- **Vouchers** — sales (customer bill), purchase (stock entry), receipt (customer pays), payment (pay a supplier)
 - Auth (JWT) + up to **5 companies** per account
-- Automatic effects: sales → stock ↓, customer receivable ↑ · purchase → stock ↑, supplier payable ↑
+- Automatic effects: sales → stock ↓, receivable ↑ · purchase → stock ↑, payable ↑ · receipt/payment → outstanding balance ↓
 - Auto voucher numbering (INV-0001 / PUR-0001), GST calculation (CGST/SGST split on invoice)
 - Invoice **PDF** (PDFKit), ledger statements, day book
-- Reports: stock summary + valuation, low-stock highlight, outstanding (receivables/payables), sales/purchase registers
-- **Keyboard shortcuts** everywhere: F1 companies, F8 sales, F9 purchase, Alt+L ledgers, Alt+S stock, Alt+D day book, Alt+R reports, Ctrl+H gateway, Ctrl+Q logout, Esc back
+- Reports: stock summary + valuation, low stock (adjustable threshold), item movement (per-item in/out history), outstanding (receivables/payables), sales/purchase registers
+- **Keyboard shortcuts** everywhere: F1 companies, F3 company info, F6 receipt, F8 sales, F9 purchase, Alt+L ledgers, Alt+S stock, Alt+D day book, Alt+R reports, Ctrl+K command search, Ctrl+P print/PDF (after saving a voucher), Ctrl+H gateway, Ctrl+Q logout, Esc back
 
 Stack: Next.js + Tailwind · Node.js + Express · PostgreSQL · JWT · PDFKit.
 
@@ -24,7 +26,9 @@ cd backend
 cp .env.example .env          # set DATABASE_URL + JWT_SECRET
 createdb smarterp             # or create the DB any way you like
 npm install
-npm run db:init               # applies src/schema.sql
+npm run db:init               # applies src/schema.sql (fresh DB)
+# already have a database from an earlier version? run instead:
+# npm run db:migrate          # enables receipt/payment voucher types
 npm run dev                   # API on http://localhost:4000
 ```
 
@@ -55,9 +59,9 @@ npm run dev                   # app on http://localhost:3000
 | GET/POST/PUT/DELETE | `/api/ledgers` | Customer/supplier ledgers |
 | GET | `/api/ledgers/:id/statement` | Party statement |
 | GET/POST | `/api/stock/units`, `/api/stock/items` | Units & stock items |
-| GET/POST | `/api/vouchers` | Day book / create voucher (transactional) |
+| GET/POST | `/api/vouchers` | Day book / create voucher (transactional; sales, purchase, receipt, payment) |
 | GET | `/api/vouchers/:id/invoice.pdf` | PDF invoice |
-| GET | `/api/reports/stock-summary` · `/outstanding` · `/register` | Reports |
+| GET | `/api/reports/stock-summary` · `/low-stock` · `/item-movement` · `/outstanding` · `/register` | Reports |
 
 All company-scoped routes require `Authorization: Bearer <token>` and `x-company-id`.
 
@@ -70,5 +74,5 @@ All company-scoped routes require `Authorization: Bearer <token>` and `x-company
 ## Notes / next steps (per the brief's future scope)
 
 - Invoice assumes intra-state supply (CGST + SGST split). Add place-of-supply → IGST later.
-- Next vouchers to add: receipt/payment (to settle outstanding balances), credit/debit notes.
+- Next vouchers to add: credit/debit notes (returns), contra and journal vouchers.
 - Email invoicing intentionally excluded, as specified in the brief.
